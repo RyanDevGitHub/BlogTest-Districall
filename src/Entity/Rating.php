@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\RatingRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: RatingRepository::class)]
@@ -15,20 +13,16 @@ class Rating
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\OneToMany(mappedBy: 'rating', targetEntity: Article::class)]
+    #[ORM\ManyToOne(inversedBy: 'ratings')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Article $Article_Id = null;
+    private ?Article $article_id = null;
 
-    #[ORM\OneToMany(mappedBy: 'rating', targetEntity: User::class)]
-    private Collection $User_Id;
+    #[ORM\ManyToOne(inversedBy: 'ratings')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
 
     #[ORM\Column]
     private ?int $rate = null;
-
-    public function __construct()
-    {
-        $this->User_Id = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -37,22 +31,26 @@ class Rating
 
     public function getArticleId(): ?Article
     {
-        return $this->Article_Id;
+        return $this->article_id;
     }
 
-    public function setArticleId(Article $Article_Id): static
+    public function setArticleId(?Article $article_id): static
     {
-        $this->Article_Id = $Article_Id;
+        $this->article_id = $article_id;
 
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUserId(): Collection
+    public function getUserId(): ?User
     {
-        return $this->User_Id;
+        return $this->user;
+    }
+
+    public function setUserId(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
     }
 
     public function getRate(): ?int

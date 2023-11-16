@@ -4,41 +4,110 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $Email = null;
+    #[ORM\Column(length: 180, unique: true)]
+    private ?string $email = null;
+
+    #[ORM\Column]
+    private array $roles = [];
+
+    /**
+     * @var string The hashed password
+     */
+    #[ORM\Column]
+    private ?string $password = null;
 
     #[ORM\Column]
     private ?int $age = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $sex = null;
+    #[ORM\Column]
+    private ?int $sex = null;
 
-    #[ORM\ManyToOne(inversedBy: 'User_id')]
-    private ?Article $name = null;
 
-    #[ORM\ManyToOne(inversedBy: 'User_Id')]
-    private ?Rating $rating = null;
-
+    public function __construct()
+    {
+        $this->roles = ['ROLE_USER'];
+    }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getEmail(): ?string
     {
-        return $this->Email;
+        return $this->email;
     }
 
-    public function setEmail(string $Email): static
+    public function setEmail(string $email): static
     {
-        $this->Email = $Email;
+        $this->email = $email;
 
         return $this;
+    }
+
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        // $roles = json_encode($this->roles);
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 
     public function getAge(): ?int
@@ -53,38 +122,14 @@ class User
         return $this;
     }
 
-    public function getSex(): ?string
+    public function getSex(): ?int
     {
         return $this->sex;
     }
 
-    public function setSex(string $sex): static
+    public function setSex(int $sex): static
     {
         $this->sex = $sex;
-
-        return $this;
-    }
-
-    public function getName(): ?Article
-    {
-        return $this->name;
-    }
-
-    public function setName(?Article $name): static
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getRating(): ?Rating
-    {
-        return $this->rating;
-    }
-
-    public function setRating(?Rating $rating): static
-    {
-        $this->rating = $rating;
 
         return $this;
     }

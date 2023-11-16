@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ArticleRepository;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -15,8 +17,12 @@ class Article
     #[ORM\Column]
     private ?int $id = null;
 
-    // #[ORM\OneToMany(mappedBy: 'id', targetEntity: User::class)]
-    // private ?Collection $User_id = null;
+    #[ORM\ManyToOne(inversedBy: 'articles', cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
@@ -25,17 +31,18 @@ class Article
     private ?string $content = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $Created_At = null;
+    private ?\DateTimeImmutable $created_At = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $Image = null;
+    private ?string $image = null;
 
-    // #[ORM\ManyToOne(mappedBy: 'name', targetEntity: Rating::class)]
-    private ?Rating $rating = null;
+    #[ORM\OneToMany(mappedBy: 'article', targetEntity: Rating::class)]
+    private Collection $ratings;
 
     public function __construct()
     {
-        $this->User_id = new ArrayCollection();
+        $this->created_At = new DateTimeImmutable();
+        $this->ratings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -43,14 +50,29 @@ class Article
         return $this->id;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUserId(): Collection
+    public function getUserId(): ?User
     {
-        return $this->User_id;
+        return $this->user;
     }
 
+    public function setUserId(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $Name): static
+    {
+        $this->name = $Name;
+
+        return $this;
+    }
 
     public function getDescription(): ?string
     {
@@ -78,41 +100,54 @@ class Article
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->Created_At;
+        return $this->created_At;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $Created_At): static
+    public function setCreatedAt(\DateTimeImmutable $created_At): static
     {
-        $this->Created_At = $Created_At;
+        $this->created_At = $created_At;
 
         return $this;
     }
 
     public function getImage(): ?string
     {
-        return $this->Image;
+        return $this->image;
     }
 
-    public function setImage(?string $Image): static
+    public function setImage(?string $image): static
     {
-        $this->Image = $Image;
+        $this->image = $image;
 
         return $this;
     }
 
-    public function getRating(): ?Rating
+    /**
+     * @return Collection<int, Rating>
+     */
+    public function getRatings(): Collection
     {
-        return $this->rating;
+        return $this->ratings;
     }
 
-    public function setRating(Rating $rating): static
+    public function addRating(Rating $rating): static
     {
-        // set the owning side of the relation if necessary
-        if ($rating->getArticleId() !== $this) {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings->add($rating);
             $rating->setArticleId($this);
         }
 
-        $this->rating = $rating;
+        return $this;
+    }
+
+    public function removeRating(Rating $rating): static
+    {
+        if ($this->ratings->removeElement($rating)) {
+            // set the owning side to null (unless already changed)
+            if ($rating->getArticleId() === $this) {
+                $rating->setArticleId(null);
+            }
+        }
 
         return $this;
     }

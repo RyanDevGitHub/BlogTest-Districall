@@ -4,18 +4,35 @@
 {% endblock %}
 
 {% block body %}
-	<div class="container mt-4">
-		{% for article in articles %}
-			<a href="">
-				<div class="card text-white bg-primary mb-3" style="max-width: 20rem;">
-					<div class="card-header">Mon Titre</div>
-					<div class="card-body">
-						<h4 class="card-title">Description</h4>
-						{# <p class="card-text">{{article.name()}}</p> #}
-						<p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ex nemo eaque dolore corrupti deserunt, cupiditate optio placeat eveniet inventore saepe nostrum sunt quam natus unde sequi libero? Repellat, beatae suscipit.</p>
-					</div>
-				</div>
+	<div class="container">
+		{% if not articles.items is same as ([]) %}
+			<div class="container mt-4">
+				{% for article in articles %}
+					{% if loop.index0 % 4 == 0 %}
+						<div class="row">
+						{% endif %}
+						<div class="col-md-3">
+							<a href="">
+								<div class="card text-white bg-primary mb-3">
+									<div class="card-header">{{ article.name }}</div>
+									<div class="card-body">
+										<h4 class="card-title">Description</h4>
+										<p class="card-text">{{ article.Description }}</p>
+									</div>
+								</div>
+							</a>
+						</div>
+						{% if loop.index % 4 == 0 or loop.last %}
+						</div>
+					{% endif %}
+				{% endfor %}
 			</div>
-		</a>
-	{% endfor %}
+			{# display navigation #}
+			<div class="navigation d-flex justify-content-center ">
+				{{ knp_pagination_render(articles) }}
+			</div>
+		{% else %}
+			<h4>Il n'y a pas d'ingrédients</h4>
+		{% endif %}
+	</div>
 {% endblock %}
